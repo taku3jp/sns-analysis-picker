@@ -3,228 +3,324 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>分析メニュー仕分け</title>
+<title>分析メニュー アンケート</title>
 <style>
   :root {
-    --bg: #f5f5f4;
+    --bg1: #eef2ff;
+    --bg2: #f8fafc;
     --card: #ffffff;
-    --border: #e5e5e4;
-    --text: #1c1917;
-    --muted: #78716b;
-    --ok: #16a34a;
+    --border: #e7e9f0;
+    --text: #1e2235;
+    --muted: #7a8199;
+    --accent: #6366f1;
+    --accent2: #8b5cf6;
+    --ok: #059669;
+    --okbg: #d1fae5;
     --pri: #d97706;
+    --pribg: #fef3c7;
     --ng: #dc2626;
+    --ngbg: #fee2e2;
+    --radius: 14px;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
   body {
-    font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Noto Sans JP", sans-serif;
-    background: var(--bg);
+    font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Noto Sans JP", "Yu Gothic", sans-serif;
+    background: linear-gradient(160deg, var(--bg1), var(--bg2) 40%);
+    background-attachment: fixed;
     color: var(--text);
-    line-height: 1.6;
-    padding-bottom: 120px;
+    line-height: 1.65;
+    min-height: 100vh;
   }
+
+  /* ---------- header ---------- */
   header {
     position: sticky;
     top: 0;
-    z-index: 10;
-    background: var(--card);
+    z-index: 20;
+    backdrop-filter: blur(12px);
+    background: rgba(255,255,255,.85);
     border-bottom: 1px solid var(--border);
-    padding: 12px 16px;
+    padding: 14px 20px 10px;
+  }
+  .header-inner {
+    max-width: 760px;
+    margin: 0 auto;
     display: flex;
-    flex-wrap: wrap;
     align-items: center;
-    gap: 10px;
+    gap: 12px;
   }
-  header h1 { font-size: 17px; font-weight: 700; }
-  header .progress {
-    font-size: 13px;
-    color: var(--muted);
-    margin-left: auto;
+  header h1 { font-size: 16px; font-weight: 700; letter-spacing: .02em; }
+  .progress-wrap { margin-left: auto; text-align: right; }
+  .progress-label { font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; }
+  .progress-bar {
+    margin-top: 4px;
+    width: 140px;
+    height: 6px;
+    border-radius: 99px;
+    background: #e5e7f5;
+    overflow: hidden;
   }
-  .btn {
-    border: 1px solid var(--border);
-    background: var(--card);
-    border-radius: 8px;
-    padding: 6px 14px;
-    font-size: 14px;
-    cursor: pointer;
-    font-family: inherit;
+  .progress-bar > div {
+    height: 100%;
+    width: 0%;
+    border-radius: 99px;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    transition: width .3s ease;
   }
-  .btn:hover { background: #fafaf9; }
-  .btn.primary { background: var(--text); color: #fff; border-color: var(--text); }
-  .btn.primary:hover { background: #44403c; }
-  main { max-width: 860px; margin: 0 auto; padding: 16px; }
+
+  main { max-width: 760px; margin: 0 auto; padding: 24px 16px 60px; }
+
   .intro {
     background: var(--card);
     border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 14px 16px;
+    border-radius: var(--radius);
+    box-shadow: 0 2px 12px rgba(80,90,180,.06);
+    padding: 20px 22px;
+    margin-bottom: 28px;
     font-size: 14px;
-    color: var(--muted);
-    margin-bottom: 20px;
+    color: #4b5069;
   }
-  .intro b { color: var(--text); }
+  .intro .pills { margin-top: 10px; display: flex; gap: 8px; flex-wrap: wrap; }
+  .pill-demo {
+    font-size: 12.5px;
+    padding: 4px 12px;
+    border-radius: 99px;
+    font-weight: 600;
+  }
+  .pill-demo.ok { background: var(--okbg); color: var(--ok); }
+  .pill-demo.pri { background: var(--pribg); color: var(--pri); }
+  .pill-demo.ng { background: var(--ngbg); color: var(--ng); }
+  .intro .privacy { margin-top: 10px; font-size: 12.5px; color: var(--muted); }
+
+  /* ---------- sections ---------- */
   section {
     background: var(--card);
     border: 1px solid var(--border);
-    border-radius: 10px;
-    margin-bottom: 20px;
+    border-radius: var(--radius);
+    box-shadow: 0 2px 12px rgba(80,90,180,.06);
+    margin-bottom: 22px;
     overflow: hidden;
   }
-  .sec-head {
-    padding: 14px 16px 10px;
-    border-bottom: 1px solid var(--border);
+  .sec-head { padding: 18px 20px 12px; }
+  .sec-head h2 { font-size: 15.5px; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+  .sec-head h2 .secnum {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px; height: 24px;
+    border-radius: 8px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    color: #fff;
+    font-size: 12px;
+    font-weight: 700;
+    flex-shrink: 0;
   }
-  .sec-head h2 { font-size: 15px; font-weight: 700; }
   .sec-head .note {
     font-size: 12.5px;
     color: var(--muted);
-    margin-top: 4px;
-  }
-  .sec-tools {
-    display: flex;
-    gap: 6px;
-    margin-top: 8px;
-  }
-  .sec-tools .btn { font-size: 12px; padding: 3px 10px; border-radius: 6px; }
-  .item {
-    display: flex;
-    align-items: flex-start;
-    gap: 10px;
-    padding: 10px 16px;
-    border-bottom: 1px solid #f0efee;
-  }
-  .item:last-child { border-bottom: none; }
-  .item .txt { flex: 1; font-size: 14px; padding-top: 3px; }
-  .item .txt .id {
-    color: var(--muted);
-    font-size: 12px;
-    margin-right: 6px;
-  }
-  .choices { display: flex; gap: 6px; flex-shrink: 0; }
-  .ch {
-    width: 44px;
-    height: 36px;
-    border: 1.5px solid var(--border);
+    margin-top: 6px;
+    padding: 8px 10px;
+    background: #f7f8fc;
     border-radius: 8px;
-    background: var(--card);
-    font-size: 16px;
+  }
+  .sec-tools { display: flex; gap: 14px; margin-top: 10px; }
+  .sec-tools button {
+    border: none;
+    background: none;
+    font-size: 12px;
+    color: var(--muted);
     cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    padding: 2px 0;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    font-family: inherit;
+  }
+  .sec-tools button:hover { color: var(--text); }
+
+  .item {
+    padding: 12px 20px;
+    border-top: 1px solid #f1f2f8;
+    transition: background .15s;
+  }
+  .item .txt { font-size: 14px; margin-bottom: 8px; }
+  .item .txt .id {
+    display: inline-block;
+    color: var(--muted);
+    font-size: 11px;
+    font-weight: 600;
+    margin-right: 8px;
+    letter-spacing: .03em;
+  }
+  .choices { display: flex; gap: 8px; }
+  .ch {
+    flex: 1;
+    max-width: 150px;
+    border: 1.5px solid var(--border);
+    border-radius: 10px;
+    background: #fbfbfe;
+    font-size: 13px;
+    font-weight: 600;
+    color: #5a6079;
+    cursor: pointer;
+    padding: 8px 0;
+    font-family: inherit;
     transition: all .12s;
   }
-  .ch:hover { border-color: #a8a29e; }
-  .ch .lbl { font-size: 10px; display: none; }
-  .ch.sel-ok { background: #dcfce7; border-color: var(--ok); color: var(--ok); font-weight: 700; }
-  .ch.sel-pri { background: #fef3c7; border-color: var(--pri); color: var(--pri); font-weight: 700; }
-  .ch.sel-ng { background: #fee2e2; border-color: var(--ng); color: var(--ng); font-weight: 700; }
-  .item.marked-ok { background: #f0fdf4; }
-  .item.marked-pri { background: #fffbeb; }
-  .item.marked-ng { background: #fef2f2; }
-  .legend { font-size: 12px; color: var(--muted); }
-  .legend span { white-space: nowrap; margin-right: 10px; }
+  .ch:hover { border-color: #c3c7e0; background: #f4f5fb; }
+  .ch.sel-ok  { background: var(--okbg);  border-color: var(--ok);  color: var(--ok); }
+  .ch.sel-pri { background: var(--pribg); border-color: var(--pri); color: var(--pri); }
+  .ch.sel-ng  { background: var(--ngbg);  border-color: var(--ng);  color: var(--ng); }
+  .item.marked-ok  { background: #f6fdf9; }
+  .item.marked-pri { background: #fffdf5; }
+  .item.marked-ng  { background: #fffafa; }
+
+  .comment-box { padding: 14px 20px 18px; border-top: 1px dashed var(--border); background: #fbfbff; }
+  .comment-box label { display: block; font-size: 12.5px; font-weight: 600; color: var(--muted); margin-bottom: 6px; }
+  .comment-box textarea {
+    width: 100%;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 10px 12px;
+    font-size: 14px;
+    font-family: inherit;
+    resize: vertical;
+    min-height: 56px;
+    background: #fff;
+  }
+  .comment-box textarea:focus { outline: 2px solid #c7c9f0; outline-offset: -1px; border-color: var(--accent); }
+
+  /* ---------- submit ---------- */
+  .submit-area { text-align: center; padding: 12px 0 20px; }
+  #submitBtn {
+    width: 100%;
+    max-width: 420px;
+    border: none;
+    border-radius: 14px;
+    padding: 17px 0;
+    font-size: 17px;
+    font-weight: 700;
+    color: #fff;
+    font-family: inherit;
+    cursor: pointer;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    box-shadow: 0 6px 20px rgba(99,102,241,.35);
+    transition: transform .12s, box-shadow .12s, opacity .2s;
+  }
+  #submitBtn:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 8px 24px rgba(99,102,241,.45); }
+  #submitBtn:active:not(:disabled) { transform: translateY(0); }
+  #submitBtn:disabled { opacity: .55; cursor: default; }
+  .submit-note { font-size: 12.5px; color: var(--muted); margin-top: 12px; line-height: 1.7; }
+
+  /* ---------- done view ---------- */
+  #done {
+    display: none;
+    text-align: center;
+    padding: 80px 20px;
+  }
+  #done .check {
+    width: 72px; height: 72px;
+    margin: 0 auto 20px;
+    border-radius: 50%;
+    background: var(--okbg);
+    color: var(--ok);
+    font-size: 34px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  #done h2 { font-size: 20px; margin-bottom: 8px; }
+  #done p { font-size: 14px; color: var(--muted); }
+  #done .again {
+    margin-top: 26px;
+    display: inline-block;
+    font-size: 13px;
+    color: var(--accent);
+    cursor: pointer;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    background: none; border: none; font-family: inherit;
+  }
+
   #toast {
     position: fixed;
     bottom: 24px;
     left: 50%;
-    transform: translateX(-50%) translateY(80px);
-    background: var(--text);
+    transform: translateX(-50%) translateY(90px);
+    background: #1e2235;
     color: #fff;
-    padding: 10px 20px;
-    border-radius: 8px;
-    font-size: 14px;
+    padding: 12px 22px;
+    border-radius: 10px;
+    font-size: 13.5px;
     opacity: 0;
     transition: all .25s;
     pointer-events: none;
-    z-index: 20;
+    z-index: 30;
     max-width: 90vw;
     text-align: center;
+    box-shadow: 0 8px 30px rgba(0,0,0,.25);
   }
   #toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
-  .comment-box {
-    padding: 10px 16px 14px;
-    border-top: 1px dashed var(--border);
-  }
-  .comment-box label {
-    display: block;
-    font-size: 12.5px;
-    color: var(--muted);
-    margin-bottom: 6px;
-  }
-  .comment-box textarea {
-    width: 100%;
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 8px 10px;
-    font-size: 14px;
-    font-family: inherit;
-    resize: vertical;
-    min-height: 52px;
-  }
-  .comment-box textarea:focus {
-    outline: 2px solid #a8a29e;
-    outline-offset: -1px;
-  }
-  .submit-area {
-    text-align: center;
-    padding: 28px 16px 40px;
-  }
-  .submit-area .big {
-    font-size: 17px;
-    padding: 14px 48px;
-    border-radius: 12px;
-    font-weight: 700;
-  }
-  .submit-note {
-    font-size: 12.5px;
-    color: var(--muted);
-    margin-top: 10px;
-    max-width: 520px;
-    margin-left: auto;
-    margin-right: auto;
-  }
-  @media (max-width: 600px) {
-    .item { flex-direction: column; gap: 6px; }
-    .choices { align-self: flex-end; }
+
+  footer { text-align: center; font-size: 11.5px; color: #a3a8bd; padding: 0 0 40px; }
+
+  @media (max-width: 560px) {
+    .choices { flex-direction: column; }
+    .ch { max-width: none; padding: 10px 0; }
+    .progress-bar { width: 100px; }
   }
 </style>
 </head>
 <body>
 <header>
-  <h1>分析メニュー仕分け</h1>
-  <span class="legend">
-    <span>○ ほしい</span><span>★ 優先</span><span>× いらない</span>
-  </span>
-  <span class="progress" id="progress"></span>
-  <button class="btn" id="resetBtn">全リセット</button>
-  <button class="btn primary" id="copyBtn">結果をコピー</button>
-</header>
-<main>
-  <div class="intro">
-    各項目を <b>○ ほしい</b> / <b>★ 優先</b> / <b>× いらない</b> で仕分けしてください（もう一度押すと解除）。
-    終わったら右上の <b>「結果をコピー」</b> を押して、会話に貼り付けてください。
-    未回答のままの項目は「どちらでもいい」扱いになります。
+  <div class="header-inner">
+    <h1>分析メニュー アンケート</h1>
+    <div class="progress-wrap">
+      <div class="progress-label" id="progress">0 / 51</div>
+      <div class="progress-bar"><div id="pbar"></div></div>
+    </div>
   </div>
+</header>
+
+<main id="formView">
+  <div class="intro">
+    各項目について、分析に欲しいかどうかを3つから選んでください。
+    <div class="pills">
+      <span class="pill-demo ok">○ ほしい</span>
+      <span class="pill-demo pri">★ 優先してほしい</span>
+      <span class="pill-demo ng">× いらない</span>
+    </div>
+    <div class="privacy">
+      選んだボタンをもう一度押すと解除できます。未回答のままでもOKです。<br>
+      回答は暗号化されて送信され、管理者だけが内容を確認できます。
+    </div>
+  </div>
+
   <div id="sections"></div>
+
   <div class="submit-area">
-    <button class="btn primary big" id="submitBtn">アンケートを送信</button>
-    <p class="submit-note">
-      送信ボタンを押すと、<b>自分だけが見れる非公開GitHubリポジトリ</b>へのissue作成画面が開きます。<br>
-      その画面で「Submit new issue」を押すと回答が保存され、あなた（管理者）だけが閲覧できます。<br>
-      同時に結果はクリップボードにもコピーされるので、会話に貼り付けて送ってもOKです。
+    <button id="submitBtn">送信する</button>
+    <p class="submit-note" id="submitNote">
+      送信ボタンを押すと回答が暗号化されて送信され、完了です。<br>
+      回答内容を見られるのは管理者だけです。
     </p>
   </div>
 </main>
+
+<div id="done">
+  <div class="check">✓</div>
+  <h2>送信しました</h2>
+  <p>ご協力ありがとうございました。</p>
+  <button class="again" id="againBtn">続けて別の回答を送る</button>
+</div>
+
 <div id="toast"></div>
+<footer>分析メニュー仕分けアンケート</footer>
 
 <script>
 const SECTIONS = [
   {
     id: "ig",
     title: "Instagramのリール・アカウント",
-    note: "リール1,877本。増減の比較には同じ指標の複数回記録があるものに限る。アカウント全投稿の網羅ではなく、キャプションは一部のみ取得済み。",
+    note: "リール1,877本が対象。増減の比較には同じ指標の複数回記録があるものに限る。全投稿の網羅ではなく、キャプションは一部のみ取得済み。",
     items: [
       "再生・表示回数の多いリールを探す",
       "観測期間中に再生・表示回数が伸びたリールを探す",
@@ -280,7 +376,7 @@ const SECTIONS = [
   {
     id: "x",
     title: "X",
-    note: "313投稿。ほぼ表示回数のみで反復観測が不足。今伸びている投稿・いいね率・拡散力・フォロワー増加の分析は現状難しい。",
+    note: "313投稿。ほぼ表示回数のみで反復観測が不足。「今伸びている投稿」・いいね率・拡散力・フォロワー増加の分析は現状難しい。",
     items: [
       "収集した投稿の中から、表示回数の多い投稿を探す",
       "投稿者ごとに、収集済み投稿の表示回数の平均・中央値・ばらつきを比較する",
@@ -291,7 +387,7 @@ const SECTIONS = [
   {
     id: "mix",
     title: "SNSと販売先を組み合わせた分析",
-    note: "関連先の根拠と、同じ期間の記録がある対象に限る。「同時期に変化した」は確認できるが、「その投稿が順位を上げた」とは断定できない。",
+    note: "関連先の根拠と、同じ期間の記録がある対象に限る。「同時期に変化した」は確認できるが「その投稿が順位を上げた」とは断定できない。",
     items: [
       "公開リンクでつながるInstagramとXFANS・myfansをまとめて調べる",
       "リールが伸びた時期と、関連する販売先の順位変化を並べて見る",
@@ -303,7 +399,7 @@ const SECTIONS = [
   {
     id: "na",
     title: "今のデータだけでは分からないこと",
-    note: "ここに○を付けると「この分析がしたいので、データ取得方法を検討してほしい」の意味になります。",
+    note: "ここに○を付けると「この分析がしたいので、データ取得方法を検討してほしい」という意味になります。",
     items: [
       "実売上、販売数、有料会員数、利益",
       "SNSから販売ページへのクリック数・購入率",
@@ -317,17 +413,21 @@ const SECTIONS = [
 ];
 
 const MARKS = [
-  { key: "pri",  sym: "★", label: "優先",   cls: "sel-pri", itemCls: "marked-pri" },
-  { key: "ok",   sym: "○", label: "ほしい", cls: "sel-ok",  itemCls: "marked-ok" },
-  { key: "ng",   sym: "×", label: "いらない", cls: "sel-ng", itemCls: "marked-ng" },
+  { key: "ok",  label: "○ ほしい",          cls: "sel-ok",  itemCls: "marked-ok"  },
+  { key: "pri", label: "★ 優先してほしい",   cls: "sel-pri", itemCls: "marked-pri" },
+  { key: "ng",  label: "× いらない",         cls: "sel-ng",  itemCls: "marked-ng"  },
 ];
 
-const LS_KEY = "analysis-picker-v1";
+const LS_KEY = "analysis-picker-v2";
+const HOOK_URL = "https://webhook.site/0196fd60-419f-4e2c-bc0c-fdca16cecb47";
+const PUB_KEY_B64 = "MIIBojANBgkqhkiG9w0BAQEFAAOCAY8AMIIBigKCAYEArkqTdgY64PrMYKsnIZGgCludA+U39/0e/GVWUsOmLCtxxI++/32Y7J4kbYx5Wp6BBhdNEQMl+BdAKWknZlLLJiIMYXI7YEh5NIcU44u3hJrSqj9wI5j7NF0cf7w0EThzLfq1v1WxsXqTYo712d7Qjcd62Ftdr5R/DPgDznQdVq5tmzN2VVtKd7ULmW+N51M2RpJ9T2am9/4HVBumxj5etkkXdvmPz6UXP5gS3RUBh73O3EFqP+ZcVL5ErXo05/7G1LVTWBCwDLxEpe0atvwzXUnszY3NV/pXE0dYb5X+VCpsExQ9Gpsxw/eVf/kOLr3K2XXv1yHaA1fQVFRbUwf2Rg56JdbkDCkdD3X7ze52yAxRvMx6DKOFbZgR5G/KjKPC8VMEqGGQd3POk22eQzK6Ngw2glqH+So1pTY+6gU04Q2h+GJIb7Cp8x+ALUOTVUBiS1WsxgFM2gozXG9ZXA6HGLUafgZVq0YnzSxltyne1Rc3GzeveACv9lMxrqobP871AgMBAAE=";
+
 let state = {};
 try { state = JSON.parse(localStorage.getItem(LS_KEY) || "{}"); } catch (e) { state = {}; }
 
 const container = document.getElementById("sections");
 const progress = document.getElementById("progress");
+const pbar = document.getElementById("pbar");
 const toast = document.getElementById("toast");
 
 const ALL_ITEMS = [];
@@ -337,22 +437,22 @@ function save() { localStorage.setItem(LS_KEY, JSON.stringify(state)); }
 
 function updateProgress() {
   const done = ALL_ITEMS.filter(it => state[it.id]).length;
-  progress.textContent = `回答済み ${done} / ${ALL_ITEMS.length}`;
+  progress.textContent = `${done} / ${ALL_ITEMS.length}`;
+  pbar.style.width = `${(done / ALL_ITEMS.length) * 100}%`;
 }
 
 function render() {
   container.innerHTML = "";
-  SECTIONS.forEach(sec => {
+  SECTIONS.forEach((sec, si) => {
     const el = document.createElement("section");
     const head = document.createElement("div");
     head.className = "sec-head";
-    head.innerHTML = `<h2>${sec.title}</h2>` +
+    head.innerHTML = `<h2><span class="secnum">${si + 1}</span>${sec.title}</h2>` +
       (sec.note ? `<div class="note">${sec.note}</div>` : "");
     const tools = document.createElement("div");
     tools.className = "sec-tools";
-    [["all-ok", "全部○"], ["all-ng", "全部×"], ["clear", "未回答に戻す"]].forEach(([act, lbl]) => {
+    [["all-ok", "このカテゴリを全部○"], ["all-ng", "全部×"], ["clear", "選択を解除"]].forEach(([act, lbl]) => {
       const b = document.createElement("button");
-      b.className = "btn";
       b.textContent = lbl;
       b.onclick = () => bulkSet(sec, act);
       tools.appendChild(b);
@@ -372,9 +472,8 @@ function render() {
         const b = document.createElement("button");
         b.className = "ch";
         b.dataset.mark = m.key;
-        b.title = m.label;
-        b.textContent = m.sym;
-        b.onclick = () => toggle(id, m.key, row, b);
+        b.textContent = m.label;
+        b.onclick = () => toggle(id, m.key, row);
         choices.appendChild(b);
       });
       row.appendChild(choices);
@@ -385,7 +484,7 @@ function render() {
     const cbox = document.createElement("div");
     cbox.className = "comment-box";
     const clabel = document.createElement("label");
-    clabel.textContent = "このカテゴリで他にほしい分析・機能（自由記述・任意）";
+    clabel.textContent = "このカテゴリで他に欲しい分析・機能（自由記述・任意）";
     const ta = document.createElement("textarea");
     ta.placeholder = "例：週次で順位の変動を通知してほしい、〇〇の切り口で見たい など";
     ta.value = state["_c_" + sec.id] || "";
@@ -454,6 +553,7 @@ function buildResult() {
     .map(sec => `【${sec.title}】\n${state["_c_" + sec.id].trim()}`);
   const lines = [
     "【分析メニュー仕分け結果】",
+    `送信日時: ${new Date().toLocaleString("ja-JP")}`,
     "",
     "★ 優先:",
     fmt(groups.pri),
@@ -472,69 +572,102 @@ function buildResult() {
   return lines.join("\n");
 }
 
+/* ---------- encryption ---------- */
+function b64enc(buf) {
+  let s = "";
+  const bytes = new Uint8Array(buf);
+  for (let i = 0; i < bytes.length; i++) s += String.fromCharCode(bytes[i]);
+  return btoa(s);
+}
+function b64dec(b64) {
+  const s = atob(b64);
+  const bytes = new Uint8Array(s.length);
+  for (let i = 0; i < s.length; i++) bytes[i] = s.charCodeAt(i);
+  return bytes.buffer;
+}
+
+async function encryptPayload(plainText) {
+  const pubKey = await crypto.subtle.importKey(
+    "spki", b64dec(PUB_KEY_B64),
+    { name: "RSA-OAEP", hash: "SHA-256" }, false, ["encrypt"]
+  );
+  const aesKey = await crypto.subtle.generateKey({ name: "AES-GCM", length: 256 }, true, ["encrypt"]);
+  const iv = crypto.getRandomValues(new Uint8Array(12));
+  const ct = await crypto.subtle.encrypt(
+    { name: "AES-GCM", iv }, aesKey, new TextEncoder().encode(plainText)
+  );
+  const rawAes = await crypto.subtle.exportKey("raw", aesKey);
+  const wrapped = await crypto.subtle.encrypt({ name: "RSA-OAEP" }, pubKey, rawAes);
+  return btoa(JSON.stringify({
+    v: 1,
+    k: b64enc(wrapped),
+    i: b64enc(iv),
+    d: b64enc(ct),
+  }));
+}
+
+/* ---------- submit ---------- */
 function showToast(msg) {
   toast.textContent = msg;
   toast.classList.add("show");
-  setTimeout(() => toast.classList.remove("show"), 2200);
+  setTimeout(() => toast.classList.remove("show"), 2600);
 }
 
-async function copyResult() {
-  const text = buildResult();
+async function copyToClipboard(text) {
   try {
     await navigator.clipboard.writeText(text);
+    return true;
   } catch (e) {
     const ta = document.createElement("textarea");
     ta.value = text;
     document.body.appendChild(ta);
     ta.select();
-    document.execCommand("copy");
+    try { document.execCommand("copy"); } catch (e2) {}
     ta.remove();
+    return true;
   }
 }
 
-document.getElementById("copyBtn").onclick = async () => {
-  await copyResult();
-  showToast("コピーしました。会話に貼り付けてください");
-};
-
-function buildCompactResult() {
-  const by = m => ALL_ITEMS.filter(it => state[it.id] === m).map(it => it.id).join(", ") || "なし";
-  const none = ALL_ITEMS.filter(it => !state[it.id]).map(it => it.id).join(", ") || "なし";
-  const comments = SECTIONS
-    .filter(sec => (state["_c_" + sec.id] || "").trim())
-    .map(sec => `【${sec.title}】 ${state["_c_" + sec.id].trim()}`)
-    .join("\n");
-  return `★優先: ${by("pri")}\n○ほしい: ${by("ok")}\n×いらない: ${by("ng")}\n未回答: ${none}\n\n項目一覧: https://taku3jp.github.io/sns-analysis-picker/` +
-    (comments ? `\n\n自由記述:\n${comments}` : "");
-}
-
-const ISSUE_URL = "https://github.com/taku3jp/sns-analysis-responses/issues/new";
-
-document.getElementById("submitBtn").onclick = () => {
+const submitBtn = document.getElementById("submitBtn");
+submitBtn.onclick = async () => {
   const text = buildResult();
-  const title = `分析メニュー仕分け結果 ${new Date().toLocaleString("ja-JP")}`;
-  let url = `${ISSUE_URL}?title=${encodeURIComponent(title)}&body=${encodeURIComponent(text)}`;
-  if (url.length > 20000) {
-    url = `${ISSUE_URL}?title=${encodeURIComponent(title)}&body=${encodeURIComponent(buildCompactResult())}`;
+  submitBtn.disabled = true;
+  submitBtn.textContent = "送信中…";
+  let delivered = false;
+  try {
+    const payload = await encryptPayload(text);
+    await fetch(HOOK_URL, {
+      method: "POST",
+      mode: "no-cors",
+      headers: { "Content-Type": "text/plain" },
+      body: payload,
+    });
+    delivered = true;
+  } catch (e) {
+    delivered = false;
   }
-  window.open(url, "_blank");
-  copyResult().then(() => {
-    const unanswered = ALL_ITEMS.filter(it => !state[it.id]).length;
-    showToast(
-      "結果をコピーし、送信画面を開きました。" +
-      "GitHubで Submit new issue を押すと自分だけが見れる非公開issueとして保存されます" +
-      (unanswered ? `（未回答 ${unanswered}件）` : "")
-    );
-  });
+  if (delivered) {
+    document.getElementById("formView").style.display = "none";
+    document.getElementById("done").style.display = "block";
+    window.scrollTo({ top: 0 });
+    state = {};
+    save();
+  } else {
+    // 送信に失敗した場合はコピーして手動で渡せるようにする
+    await copyToClipboard(text);
+    submitBtn.disabled = false;
+    submitBtn.textContent = "送信する";
+    showToast("送信に失敗しました。結果をコピーしたので、サイトの管理者に直接渡してください");
+  }
 };
 
-document.getElementById("resetBtn").onclick = () => {
-  if (!confirm("すべての回答をリセットしますか？")) return;
-  state = {};
-  save();
-  container.querySelectorAll(".item").forEach(row => applyMark(row, row.dataset.id));
-  container.querySelectorAll(".comment-box textarea").forEach(ta => { ta.value = ""; });
-  updateProgress();
+document.getElementById("againBtn").onclick = () => {
+  document.getElementById("done").style.display = "none";
+  document.getElementById("formView").style.display = "block";
+  submitBtn.disabled = false;
+  submitBtn.textContent = "送信する";
+  render();
+  window.scrollTo({ top: 0 });
 };
 
 render();
