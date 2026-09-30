@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>分析メニュー仕分け</title>
+<style>
+  :root {
+    --bg: #f5f5f4;
+    --card: #ffffff;
+    --border: #e5e5e4;
+    --text: #1c1917;
+    --muted: #78716b;
+    --ok: #16a34a;
+    --pri: #d97706;
+    --ng: #dc2626;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Noto Sans JP", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+    padding-bottom: 120px;
+  }
+  header {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background: var(--card);
+    border-bottom: 1px solid var(--border);
+    padding: 12px 16px;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+  }
+  header h1 { font-size: 17px; font-weight: 700; }
+  header .progress {
+    font-size: 13px;
+    color: var(--muted);
+    margin-left: auto;
+  }
+  .btn {
+    border: 1px solid var(--border);
+    background: var(--card);
+    border-radius: 8px;
+    padding: 6px 14px;
+    font-size: 14px;
+    cursor: pointer;
+    font-family: inherit;
+  }
+  .btn:hover { background: #fafaf9; }
+  .btn.primary { background: var(--text); color: #fff; border-color: var(--text); }
+  .btn.primary:hover { background: #44403c; }
+  main { max-width: 860px; margin: 0 auto; padding: 16px; }
+  .intro {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 16px;
+    font-size: 14px;
+    color: var(--muted);
+    margin-bottom: 20px;
+  }
+  .intro b { color: var(--text); }
+  section {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    margin-bottom: 20px;
+    overflow: hidden;
+  }
+  .sec-head {
+    padding: 14px 16px 10px;
+    border-bottom: 1px solid var(--border);
+  }
+  .sec-head h2 { font-size: 15px; font-weight: 700; }
+  .sec-head .note {
+    font-size: 12.5px;
+    color: var(--muted);
+    margin-top: 4px;
+  }
+  .sec-tools {
+    display: flex;
+    gap: 6px;
+    margin-top: 8px;
+  }
+  .sec-tools .btn { font-size: 12px; padding: 3px 10px; border-radius: 6px; }
+  .item {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 10px 16px;
+    border-bottom: 1px solid #f0efee;
+  }
+  .item:last-child { border-bottom: none; }
+  .item .txt { flex: 1; font-size: 14px; padding-top: 3px; }
+  .item .txt .id {
+    color: var(--muted);
+    font-size: 12px;
+    margin-right: 6px;
+  }
+  .choices { display: flex; gap: 6px; flex-shrink: 0; }
+  .ch {
+    width: 44px;
+    height: 36px;
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    background: var(--card);
+    font-size: 16px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all .12s;
+  }
+  .ch:hover { border-color: #a8a29e; }
+  .ch .lbl { font-size: 10px; display: none; }
+  .ch.sel-ok { background: #dcfce7; border-color: var(--ok); color: var(--ok); font-weight: 700; }
+  .ch.sel-pri { background: #fef3c7; border-color: var(--pri); color: var(--pri); font-weight: 700; }
+  .ch.sel-ng { background: #fee2e2; border-color: var(--ng); color: var(--ng); font-weight: 700; }
+  .item.marked-ok { background: #f0fdf4; }
+  .item.marked-pri { background: #fffbeb; }
+  .item.marked-ng { background: #fef2f2; }
+  .legend { font-size: 12px; color: var(--muted); }
+  .legend span { white-space: nowrap; margin-right: 10px; }
+  #toast {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%) translateY(80px);
+    background: var(--text);
+    color: #fff;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-size: 14px;
+    opacity: 0;
+    transition: all .25s;
+    pointer-events: none;
+    z-index: 20;
+  }
+  #toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+  @media (max-width: 600px) {
+    .item { flex-direction: column; gap: 6px; }
+    .choices { align-self: flex-end; }
+  }
+</style>
+</head>
+<body>
+<header>
+  <h1>分析メニュー仕分け</h1>
+  <span class="legend">
+    <span>○ ほしい</span><span>★ 優先</span><span>× いらない</span>
+  </span>
+  <span class="progress" id="progress"></span>
+  <button class="btn" id="resetBtn">全リセット</button>
+  <button class="btn primary" id="copyBtn">結果をコピー</button>
+</header>
+<main>
+  <div class="intro">
+    各項目を <b>○ ほしい</b> / <b>★ 優先</b> / <b>× いらない</b> で仕分けしてください（もう一度押すと解除）。
+    終わったら右上の <b>「結果をコピー」</b> を押して、会話に貼り付けてください。
+    未回答のままの項目は「どちらでもいい」扱いになります。
+  </div>
+  <div id="sections"></div>
+</main>
+<div id="toast"></div>
+
+<script>
+const SECTIONS = [
+  {
+    id: "ig",
+    title: "Instagramのリール・アカウント",
+    note: "リール1,877本。増減の比較には同じ指標の複数回記録があるものに限る。アカウント全投稿の網羅ではなく、キャプションは一部のみ取得済み。",
+    items: [
+      "再生・表示回数の多いリールを探す",
+      "観測期間中に再生・表示回数が伸びたリールを探す",
+      "増加数と増加率を分けて比較する",
+      "観測間隔を考慮して、1日当たりの伸びを比較する",
+      "いいね・コメントが多いリールを探す",
+      "再生・表示回数に対して、いいね・コメントの割合が高いリールを探す",
+      "同じアカウント内で、他の投稿より反応の良いリールを探す",
+      "アカウントごとに、収集済みリールの平均・中央値・ばらつきを比較する",
+      "一部の投稿に反応が集中しているか、複数の投稿で反応を得ているかを見る",
+      "フォロワー規模が近いアカウント同士でリールの反応を比較する",
+      "フォロワー数に対して再生・表示回数が多い投稿を探す",
+      "フォロワー数が増えたアカウントを探す",
+      "リールの伸びとフォロワー増加が同じ時期に起きているかを見る",
+      "キャプション取得済みの投稿に限り、言葉・ハッシュタグ・誘導文と反応の関係を探索する",
+    ],
+  },
+  {
+    id: "xf",
+    title: "XFANSのクリエイター・投稿・ガチャ",
+    note: "対象は収集できたランキング掲載範囲のみ。価格や順位から販売数・売上額は分からない。",
+    items: [
+      "フォロワーが多いクリエイターを探す",
+      "フォロワーの増加数・増加率を比較する",
+      "フォロワー規模が近いクリエイター同士で成長を比較する",
+      "クリエイターの日間ランキングの順位推移を見る",
+      "観測期間内の最高順位・順位の変動幅を見る",
+      "継続して上位に掲載されているクリエイターを探す",
+      "フォロワー増加と順位変化が同じ時期に起きているかを見る",
+      "クリエイターの累計いいね数と、その増加を比較する",
+      "取得済みの公開ジャンルごとに、フォロワー規模や伸びを比較する",
+      "投稿の日間ランキングの順位推移を見る",
+      "ガチャの日間・週間ランキングの順位推移を見る",
+      "ランキング掲載商品の価格帯・価格分布を調べる",
+      "価格帯ごとに順位・いいね・コメントの傾向を比較する",
+      "同じクリエイターの商品同士で、価格・順位・反応を比較する",
+      "公開日時が取得できている商品について、公開後の経過日数と順位・反応を比較する",
+      "収集した上位枠に、どのクリエイターの商品が多く掲載されているかを見る",
+    ],
+  },
+  {
+    id: "mf",
+    title: "myfans",
+    note: "プロフィール指標は25アカウント分・各1回の記録のみで、現状はプロフィール指標の増減分析は不可。ランキング履歴は別途あり。",
+    items: [
+      "クリエイターの日間・週間・月間・年間ランキングの順位推移を見る",
+      "観測期間内の最高順位・順位の変動幅を見る",
+      "複数のランキング区分で上位にいるクリエイターを探す",
+      "同じランキング区分で、複数クリエイターの動きを比較する",
+      "取得済みのフォロワー数・投稿数・いいね数を比較する",
+    ],
+  },
+  {
+    id: "x",
+    title: "X",
+    note: "313投稿。ほぼ表示回数のみで反復観測が不足。今伸びている投稿・いいね率・拡散力・フォロワー増加の分析は現状難しい。",
+    items: [
+      "収集した投稿の中から、表示回数の多い投稿を探す",
+      "投稿者ごとに、収集済み投稿の表示回数の平均・中央値・ばらつきを比較する",
+      "同じ投稿者の中で、表示回数が突出した投稿を探す",
+      "表示回数の多い投稿を参考候補として抽出し、元投稿を見て内容を比較する",
+    ],
+  },
+  {
+    id: "mix",
+    title: "SNSと販売先を組み合わせた分析",
+    note: "関連先の根拠と、同じ期間の記録がある対象に限る。「同時期に変化した」は確認できるが、「その投稿が順位を上げた」とは断定できない。",
+    items: [
+      "公開リンクでつながるInstagramとXFANS・myfansをまとめて調べる",
+      "リールが伸びた時期と、関連する販売先の順位変化を並べて見る",
+      "Instagramのフォロワー増加と、XFANSのフォロワー増加を並べて見る",
+      "SNSは伸びているが販売先の順位は変わっていない、といった動きの違いを探す",
+      "両方に比較可能な記録がある対象から、詳しく調べたい事例を抽出する",
+    ],
+  },
+  {
+    id: "na",
+    title: "今のデータだけでは分からないこと",
+    note: "ここに○を付けると「この分析がしたいので、データ取得方法を検討してほしい」の意味になります。",
+    items: [
+      "実売上、販売数、有料会員数、利益",
+      "SNSから販売ページへのクリック数・購入率",
+      "どの投稿から何件購入されたか",
+      "リールやXの最適な投稿時間帯、公開直後の伸び",
+      "動画の視聴維持率・離脱箇所・視聴者属性",
+      "動画内容や演出の網羅的な分析",
+      "市場全体のシェアや、未収集の競合を含むランキング",
+    ],
+  },
+];
+
+const MARKS = [
+  { key: "pri",  sym: "★", label: "優先",   cls: "sel-pri", itemCls: "marked-pri" },
+  { key: "ok",   sym: "○", label: "ほしい", cls: "sel-ok",  itemCls: "marked-ok" },
+  { key: "ng",   sym: "×", label: "いらない", cls: "sel-ng", itemCls: "marked-ng" },
+];
+
+const LS_KEY = "analysis-picker-v1";
+let state = {};
+try { state = JSON.parse(localStorage.getItem(LS_KEY) || "{}"); } catch (e) { state = {}; }
+
+const container = document.getElementById("sections");
+const progress = document.getElementById("progress");
+const toast = document.getElementById("toast");
+
+const ALL_ITEMS = [];
+SECTIONS.forEach(sec => sec.items.forEach((t, i) => ALL_ITEMS.push({ sec, id: `${sec.id}${i + 1}`, text: t })));
+
+function save() { localStorage.setItem(LS_KEY, JSON.stringify(state)); }
+
+function updateProgress() {
+  const done = ALL_ITEMS.filter(it => state[it.id]).length;
+  progress.textContent = `回答済み ${done} / ${ALL_ITEMS.length}`;
+}
+
+function render() {
+  container.innerHTML = "";
+  SECTIONS.forEach(sec => {
+    const el = document.createElement("section");
+    const head = document.createElement("div");
+    head.className = "sec-head";
+    head.innerHTML = `<h2>${sec.title}</h2>` +
+      (sec.note ? `<div class="note">${sec.note}</div>` : "");
+    const tools = document.createElement("div");
+    tools.className = "sec-tools";
+    [["all-ok", "全部○"], ["all-ng", "全部×"], ["clear", "未回答に戻す"]].forEach(([act, lbl]) => {
+      const b = document.createElement("button");
+      b.className = "btn";
+      b.textContent = lbl;
+      b.onclick = () => bulkSet(sec, act);
+      tools.appendChild(b);
+    });
+    head.appendChild(tools);
+    el.appendChild(head);
+
+    sec.items.forEach((text, i) => {
+      const id = `${sec.id}${i + 1}`;
+      const row = document.createElement("div");
+      row.className = "item";
+      row.dataset.id = id;
+      row.innerHTML = `<div class="txt"><span class="id">${id}</span>${text}</div>`;
+      const choices = document.createElement("div");
+      choices.className = "choices";
+      MARKS.forEach(m => {
+        const b = document.createElement("button");
+        b.className = "ch";
+        b.dataset.mark = m.key;
+        b.title = m.label;
+        b.textContent = m.sym;
+        b.onclick = () => toggle(id, m.key, row, b);
+        choices.appendChild(b);
+      });
+      row.appendChild(choices);
+      el.appendChild(row);
+      applyMark(row, id);
+    });
+    container.appendChild(el);
+  });
+  updateProgress();
+}
+
+function applyMark(row, id) {
+  const cur = state[id];
+  row.classList.remove("marked-ok", "marked-pri", "marked-ng");
+  row.querySelectorAll(".ch").forEach(b => {
+    b.classList.remove("sel-ok", "sel-pri", "sel-ng");
+    const m = MARKS.find(mm => mm.key === b.dataset.mark);
+    if (m && m.key === cur) {
+      b.classList.add(m.cls);
+      row.classList.add(m.itemCls);
+    }
+  });
+}
+
+function toggle(id, mark, row) {
+  if (state[id] === mark) delete state[id];
+  else state[id] = mark;
+  save();
+  applyMark(row, id);
+  updateProgress();
+}
+
+function bulkSet(sec, act) {
+  sec.items.forEach((_, i) => {
+    const id = `${sec.id}${i + 1}`;
+    const row = container.querySelector(`.item[data-id="${id}"]`);
+    if (act === "clear") delete state[id];
+    else if (act === "all-ok") state[id] = "ok";
+    else if (act === "all-ng") state[id] = "ng";
+    if (row) applyMark(row, id);
+  });
+  save();
+  updateProgress();
+}
+
+function buildResult() {
+  const groups = { pri: [], ok: [], ng: [], none: [] };
+  ALL_ITEMS.forEach(it => {
+    const m = state[it.id];
+    const entry = `${it.id} ${it.text}`;
+    if (m === "pri") groups.pri.push(entry);
+    else if (m === "ok") groups.ok.push(entry);
+    else if (m === "ng") groups.ng.push(entry);
+    else groups.none.push(it.id);
+  });
+  const fmt = arr => arr.length ? arr.map(s => "- " + s).join("\n") : "- （なし）";
+  return [
+    "【分析メニュー仕分け結果】",
+    "",
+    "★ 優先:",
+    fmt(groups.pri),
+    "",
+    "○ ほしい:",
+    fmt(groups.ok),
+    "",
+    "× いらない:",
+    fmt(groups.ng),
+    "",
+    `未回答（どちらでも）: ${groups.none.length ? groups.none.join(", ") : "なし"}`,
+  ].join("\n");
+}
+
+function showToast(msg) {
+  toast.textContent = msg;
+  toast.classList.add("show");
+  setTimeout(() => toast.classList.remove("show"), 2200);
+}
+
+document.getElementById("copyBtn").onclick = async () => {
+  const text = buildResult();
+  try {
+    await navigator.clipboard.writeText(text);
+    showToast("コピーしました。会話に貼り付けてください");
+  } catch (e) {
+    const ta = document.createElement("textarea");
+    ta.value = text;
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand("copy");
+    ta.remove();
+    showToast("コピーしました。会話に貼り付けてください");
+  }
+};
+
+document.getElementById("resetBtn").onclick = () => {
+  if (!confirm("すべての回答をリセットしますか？")) return;
+  state = {};
+  save();
+  container.querySelectorAll(".item").forEach(row => applyMark(row, row.dataset.id));
+  updateProgress();
+};
+
+render();
+</script>
+</body>
+</html>
