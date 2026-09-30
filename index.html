@@ -141,6 +141,48 @@
     z-index: 20;
   }
   #toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+  .comment-box {
+    padding: 10px 16px 14px;
+    border-top: 1px dashed var(--border);
+  }
+  .comment-box label {
+    display: block;
+    font-size: 12.5px;
+    color: var(--muted);
+    margin-bottom: 6px;
+  }
+  .comment-box textarea {
+    width: 100%;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 8px 10px;
+    font-size: 14px;
+    font-family: inherit;
+    resize: vertical;
+    min-height: 52px;
+  }
+  .comment-box textarea:focus {
+    outline: 2px solid #a8a29e;
+    outline-offset: -1px;
+  }
+  .submit-area {
+    text-align: center;
+    padding: 28px 16px 40px;
+  }
+  .submit-area .big {
+    font-size: 17px;
+    padding: 14px 48px;
+    border-radius: 12px;
+    font-weight: 700;
+  }
+  .submit-note {
+    font-size: 12.5px;
+    color: var(--muted);
+    margin-top: 10px;
+    max-width: 520px;
+    margin-left: auto;
+    margin-right: auto;
+  }
   @media (max-width: 600px) {
     .item { flex-direction: column; gap: 6px; }
     .choices { align-self: flex-end; }
@@ -164,6 +206,14 @@
     未回答のままの項目は「どちらでもいい」扱いになります。
   </div>
   <div id="sections"></div>
+  <div class="submit-area">
+    <button class="btn primary big" id="submitBtn">アンケートを送信</button>
+    <p class="submit-note">
+      送信ボタンを押すと、○×の回答と自由記述をまとめた結果がクリップボードにコピーされます。<br>
+      あとはこのサイトを作った会話（Devin）に貼り付けて送ってください。<br>
+      ※ このサイトは静的ページのため、結果はサーバーには送信されず、ブラウザ内でのみ保持されます。
+    </p>
+  </div>
 </main>
 <div id="toast"></div>
 
@@ -329,6 +379,24 @@ function render() {
       el.appendChild(row);
       applyMark(row, id);
     });
+
+    const cbox = document.createElement("div");
+    cbox.className = "comment-box";
+    const clabel = document.createElement("label");
+    clabel.textContent = "このカテゴリで他にほしい分析・機能（自由記述・任意）";
+    const ta = document.createElement("textarea");
+    ta.placeholder = "例：週次で順位の変動を通知してほしい、〇〇の切り口で見たい など";
+    ta.value = state["_c_" + sec.id] || "";
+    ta.addEventListener("input", () => {
+      const v = ta.value;
+      if (v) state["_c_" + sec.id] = v;
+      else delete state["_c_" + sec.id];
+      save();
+    });
+    cbox.appendChild(clabel);
+    cbox.appendChild(ta);
+    el.appendChild(cbox);
+
     container.appendChild(el);
   });
   updateProgress();
@@ -379,7 +447,10 @@ function buildResult() {
     else groups.none.push(it.id);
   });
   const fmt = arr => arr.length ? arr.map(s => "- " + s).join("\n") : "- （なし）";
-  return [
+  const commentLines = SECTIONS
+    .filter(sec => (state["_c_" + sec.id] || "").trim())
+    .map(sec => `【${sec.title}】\n${state["_c_" + sec.id].trim()}`);
+  const lines = [
     "【分析メニュー仕分け結果】",
     "",
     "★ 優先:",
@@ -392,7 +463,11 @@ function buildResult() {
     fmt(groups.ng),
     "",
     `未回答（どちらでも）: ${groups.none.length ? groups.none.join(", ") : "なし"}`,
-  ].join("\n");
+  ];
+  if (commentLines.length) {
+    lines.push("", "自由記述（他にほしい分析・機能）:", commentLines.join("\n\n"));
+  }
+  return lines.join("\n");
 }
 
 function showToast(msg) {
@@ -401,11 +476,10 @@ function showToast(msg) {
   setTimeout(() => toast.classList.remove("show"), 2200);
 }
 
-document.getElementById("copyBtn").onclick = async () => {
+async function copyResult() {
   const text = buildResult();
   try {
     await navigator.clipboard.writeText(text);
-    showToast("コピーしました。会話に貼り付けてください");
   } catch (e) {
     const ta = document.createElement("textarea");
     ta.value = text;
@@ -413,8 +487,22 @@ document.getElementById("copyBtn").onclick = async () => {
     ta.select();
     document.execCommand("copy");
     ta.remove();
-    showToast("コピーしました。会話に貼り付けてください");
   }
+}
+
+document.getElementById("copyBtn").onclick = async () => {
+  await copyResult();
+  showToast("コピーしました。会話に貼り付けてください");
+};
+
+document.getElementById("submitBtn").onclick = async () => {
+  const unanswered = ALL_ITEMS.filter(it => !state[it.id]).length;
+  await copyResult();
+  showToast(
+    unanswered
+      ? `結果をコピーしました（未回答 ${unanswered}件）。会話に貼り付けて送信してください`
+      : "結果をコピーしました。会話に貼り付けて送信してください"
+  );
 };
 
 document.getElementById("resetBtn").onclick = () => {
@@ -422,6 +510,7 @@ document.getElementById("resetBtn").onclick = () => {
   state = {};
   save();
   container.querySelectorAll(".item").forEach(row => applyMark(row, row.dataset.id));
+  container.querySelectorAll(".comment-box textarea").forEach(ta => { ta.value = ""; });
   updateProgress();
 };
 
