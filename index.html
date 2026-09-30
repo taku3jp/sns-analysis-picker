@@ -139,6 +139,8 @@
     transition: all .25s;
     pointer-events: none;
     z-index: 20;
+    max-width: 90vw;
+    text-align: center;
   }
   #toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
   .comment-box {
@@ -209,9 +211,9 @@
   <div class="submit-area">
     <button class="btn primary big" id="submitBtn">アンケートを送信</button>
     <p class="submit-note">
-      送信ボタンを押すと、○×の回答と自由記述をまとめた結果がクリップボードにコピーされます。<br>
-      あとはこのサイトを作った会話（Devin）に貼り付けて送ってください。<br>
-      ※ このサイトは静的ページのため、結果はサーバーには送信されず、ブラウザ内でのみ保持されます。
+      送信ボタンを押すと、<b>自分だけが見れる非公開GitHubリポジトリ</b>へのissue作成画面が開きます。<br>
+      その画面で「Submit new issue」を押すと回答が保存され、あなた（管理者）だけが閲覧できます。<br>
+      同時に結果はクリップボードにもコピーされるので、会話に貼り付けて送ってもOKです。
     </p>
   </div>
 </main>
@@ -495,14 +497,35 @@ document.getElementById("copyBtn").onclick = async () => {
   showToast("コピーしました。会話に貼り付けてください");
 };
 
-document.getElementById("submitBtn").onclick = async () => {
-  const unanswered = ALL_ITEMS.filter(it => !state[it.id]).length;
-  await copyResult();
-  showToast(
-    unanswered
-      ? `結果をコピーしました（未回答 ${unanswered}件）。会話に貼り付けて送信してください`
-      : "結果をコピーしました。会話に貼り付けて送信してください"
-  );
+function buildCompactResult() {
+  const by = m => ALL_ITEMS.filter(it => state[it.id] === m).map(it => it.id).join(", ") || "なし";
+  const none = ALL_ITEMS.filter(it => !state[it.id]).map(it => it.id).join(", ") || "なし";
+  const comments = SECTIONS
+    .filter(sec => (state["_c_" + sec.id] || "").trim())
+    .map(sec => `【${sec.title}】 ${state["_c_" + sec.id].trim()}`)
+    .join("\n");
+  return `★優先: ${by("pri")}\n○ほしい: ${by("ok")}\n×いらない: ${by("ng")}\n未回答: ${none}\n\n項目一覧: https://taku3jp.github.io/sns-analysis-picker/` +
+    (comments ? `\n\n自由記述:\n${comments}` : "");
+}
+
+const ISSUE_URL = "https://github.com/taku3jp/sns-analysis-responses/issues/new";
+
+document.getElementById("submitBtn").onclick = () => {
+  const text = buildResult();
+  const title = `分析メニュー仕分け結果 ${new Date().toLocaleString("ja-JP")}`;
+  let url = `${ISSUE_URL}?title=${encodeURIComponent(title)}&body=${encodeURIComponent(text)}`;
+  if (url.length > 20000) {
+    url = `${ISSUE_URL}?title=${encodeURIComponent(title)}&body=${encodeURIComponent(buildCompactResult())}`;
+  }
+  window.open(url, "_blank");
+  copyResult().then(() => {
+    const unanswered = ALL_ITEMS.filter(it => !state[it.id]).length;
+    showToast(
+      "結果をコピーし、送信画面を開きました。" +
+      "GitHubで Submit new issue を押すと自分だけが見れる非公開issueとして保存されます" +
+      (unanswered ? `（未回答 ${unanswered}件）` : "")
+    );
+  });
 };
 
 document.getElementById("resetBtn").onclick = () => {
